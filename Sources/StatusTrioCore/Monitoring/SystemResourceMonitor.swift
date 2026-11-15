@@ -152,3 +152,93 @@ struct LiveSystemResourceReader: SystemResourceReadingProviding, Sendable {
         return result == KERN_SUCCESS ? statistics : nil
     }
 }
+
+// MARK: - Demand-gated sampler
+
+/// Samples whole-machine CPU and memory only while one surface needs it.
+///
+/// The owner is the panel view model: it activates the monitor when the section
+/// is visible and enabled, and stops it when the panel closes. Nothing here runs
+/// on a timer while the app is at rest.
+@MainActor
+final class SystemResourceMonitor: ObservableObject {
+    typealias Reader = @Sendable () -> SystemResourceSample?
+
+    @Published private(set) var status: SystemResourceStatus = .placeholder
+
+    private let reader: Reader
+    private let interval: Duration
+    private var pollTask: Task<Void, Never>?
+    private var generation: UInt64 = 0
+    private var previousTicks: CPUUsageTicks?
+    private var isActive = false
+
+    init(
+        reader: @escaping Reader = { LiveSystemResourceReader().read() },
+        interval: Duration = .seconds(2)
+    ) {
+        self.reader = reader
+        self.interval = interval
+    }
+
+    func setActive(_ active: Bool) {
+        guard isActive != active else { return }
+        isActive = active
+        if active {
+            start()
+        } else {
+            stop()
+        }
+    }
+
+    func stop() {
+        isActive = false
+        generation &+= 1
+        pollTask?.cancel()
+        pollTask = nil
+        previousTicks = nil
+        // A reopen must not draw the reading from before the pause as if it were
+        // live: the next sample republishes memory and waits for its own delta.
+        if status != .placeholder { status = .placeholder }
+    }
+
+    /// One synchronous sample. Kept internal so tests can drive the delta
+    /// arithmetic without waiting on the timer.
+    func sampleNow() {
+        guard let sample = reader() else { return }
+        var usage = status.cpuUsage
+        if let ticks = sample.cpuTicks {
+            if let previous = previousTicks,
+               let measured = SystemResourceMath.cpuUsage(current: ticks, previous: previous) {
+                usage = measured
+            }
+            previousTicks = ticks
+        }
+        let next = SystemResourceStatus(
+            cpuUsage: usage,
+            usedMemoryBytes: sample.usedMemoryBytes,
+            totalMemoryBytes: sample.totalMemoryBytes,
+            hasReading: true
+        )
+        if next != status { status = next }
+    }
+
+    private func start() {
+        guard pollTask == nil else { return }
+        generation &+= 1
+        let currentGeneration = generation
+        sampleNow()
+        pollTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                do {
+                    try await Task.sleep(for: self.interval)
+                } catch {
+                    return
+                }
+                guard self.generation == currentGeneration, self.isActive else { return }
+                self.sampleNow()
+            }
+        }
+    }
+}
