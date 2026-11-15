@@ -59,9 +59,11 @@ Order.
 **Sampling.** 2-second cadence. Demand is `store.isPopoverVisible &&
 settings.enabledPopupSections.contains(.systemResource)`, reconciled by
 `StatusPanelViewModel.reconcileSourceSubscriptions` the same way the VPN tunnel is
-activated and deactivated. `SystemStatusStore.stop()` stops the sampler too. A
-repeating `Task` owns the timer; `stop()` cancels it and bumps a generation so a
-late tick cannot publish after teardown.
+activated and deactivated. The panel view model owns the sampler and stops it in
+`stop()`, which every close path calls before the panel is released; the store never
+references it. A repeating `Task` owns the timer; `stop()` cancels it, bumps a
+generation so a late tick cannot publish after teardown, and resets the reading so a
+reopen cannot draw a stale value as live.
 
 **CPU definition.** Delta of `host_cpu_load_info` ticks between samples:
 `(active delta) / (total delta)`, where active is user + system + nice and total adds
@@ -100,13 +102,14 @@ built by a pure mapper like `InputSourcePanelMapper`:
 
 - title: `systemResource.title` ("CPU & Memory")
 - subtitle: `CPU 18% · Memory 9 GB / 16 GB`, assembled from `systemResource.cpu`,
-  `systemResource.memory`, `ByteCountFormatStyle(.decimal)` (decimal units keep a
-  16 GB Mac reporting "16 GB", the same convention Activity Monitor uses), and the
+  `systemResource.memory`, `ByteCountFormatStyle(.memory)` (binary units, so a 16 GB
+  Mac's 17,179,869,184 bytes read as "16 GB", matching Activity Monitor), and the
   localized percent format
 - placeholder: an em dash for both halves until `hasReading` is true, so the row never
   claims `0%` or `0 bytes` as a measurement
-- accessibility: one combined element, `systemResource.accessibility`
-  ("CPU %@, memory %@ of %@")
+- accessibility: one combined element that always renders
+  `systemResource.accessibility` ("CPU %@, memory %@ of %@"), with the em dash filling
+  any half the machine has not reported, so VoiceOver never reads the visual separator
 
 New localization keys (12 languages): `systemResource.title`, `systemResource.cpu`,
 `systemResource.memory`, `systemResource.accessibility`. The existing

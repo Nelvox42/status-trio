@@ -28,16 +28,14 @@ enum SystemResourcePanelMapper {
         }
         let subtitle = "\(cpuPart) · \(memoryPart)"
 
-        let accessibilityValue: String
-        if let cpuText, let usedText, let totalText {
-            accessibilityValue = String(
-                format: localization.string(.systemResourceAccessibility),
-                locale: locale,
-                arguments: [cpuText, usedText, totalText]
-            )
-        } else {
-            accessibilityValue = subtitle
-        }
+        // The same sentence for every state, so VoiceOver never reads the visual
+        // separator instead of the sentence the other languages translate.
+        let accessibilityValue = localization.format(
+            .systemResourceAccessibility,
+            cpuText ?? placeholder,
+            usedText ?? placeholder,
+            totalText ?? placeholder
+        )
 
         let memoryFraction: Double?
         if hasReading, let status, status.totalMemoryBytes > 0 {
@@ -55,9 +53,10 @@ enum SystemResourcePanelMapper {
         )
     }
 
-    /// Decimal units so a 16 GB Mac reports "16 GB"; Activity Monitor's memory
-    /// figures use the same convention, which is what the reader compares against.
+    /// Binary units, so the 17,179,869,184 bytes of a 16 GB Mac read as "16 GB":
+    /// `physicalMemory` is binary, and Activity Monitor also labels GiB as GB.
+    /// Decimal units would report that same machine as 17.18 GB.
     private static func formatBytes(_ bytes: UInt64, locale: Locale) -> String {
-        bytes.formatted(.byteCount(style: .decimal).locale(locale))
+        bytes.formatted(.byteCount(style: .memory).locale(locale))
     }
 }

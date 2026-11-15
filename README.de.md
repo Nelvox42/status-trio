@@ -66,7 +66,7 @@ Status Trio ist eine native macOS-Status-App, die Wi-Fi, Batterie und Lautstärk
 - **Nativ auf macOS** — ein Linksklick öffnet das Popover, ein Rechtsklick das Menü, und eine Anleitung beim ersten Start erklärt jeden Teil des Symbols. Ethernet, ein persönlicher Hotspot oder Internetfreigabe können das Wi-Fi-Symbol beibehalten, wenn Sie das bevorzugen.
 - **Immer aktuell** — der Status stammt aus Systemereignissen, mit einer langsamen Abfrage als Ersatzlösung, und Sparkle aktualisiert die App über einen signierten Feed.
 - **Ebenfalls enthalten** — zwölf Sprachen und die Option „Beim Anmelden starten“.
-- **CPU und Arbeitsspeicher**: Der Statusbereich kann die aktuelle CPU- und Arbeitsspeicher-Auslastung des ganzen Macs anzeigen. Standardmäßig aus; aktivieren unter **Einstellungen › Statusbereich › Angezeigte Elemente**.
+- **CPU und Arbeitsspeicher** — Der Statusbereich kann die aktuelle CPU- und Arbeitsspeicher-Auslastung des ganzen Macs anzeigen. Standardmäßig aus; aktivieren unter **Einstellungen › Statusbereich › Angezeigte Elemente**.
 
 ## Installation
 

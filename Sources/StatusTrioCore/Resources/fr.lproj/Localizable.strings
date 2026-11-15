@@ -762,7 +762,7 @@
 "airPods.spatialHeadTracked" = "Suivi de la tête";
 
 "airpods.retry" = "Réessayer";
-"settings.popup.order.systemResource" = "CPU et Mémoire";
+"settings.popup.order.systemResource" = "CPU et mémoire";
 "systemResource.title" = "CPU et mémoire";
 "systemResource.cpu" = "CPU";
 "systemResource.memory" = "Mémoire";

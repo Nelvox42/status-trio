@@ -350,6 +350,21 @@ final class SettingsPreferenceCatalogTests: XCTestCase {
         }
     }
 
+    func testPanelOrderRejectsADocumentMissingAnOlderSection() {
+        // Missing the first default section but naming the newest one is not an
+        // older release's document; it must keep the warning instead of quietly
+        // resetting or reordering the panel.
+        let partial = SettingsStore.defaultPopupSectionOrder.filter { $0 != .battery }
+        let prepared = SettingsPreferenceCatalog.prepare([
+            "popupSectionOrder": .array(partial.map { .string($0.rawValue) })
+        ])
+        XCTAssertEqual(prepared.warnings.count, 1)
+        XCTAssertEqual(
+            prepared.values["popupSectionOrder"],
+            .array(SettingsStore.defaultPopupSectionOrder.map { .string($0.rawValue) })
+        )
+    }
+
     private func withStore(_ body: (SettingsStore, UserDefaults) -> Void) {
         let name = "SettingsPreferenceCatalogTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: name)!

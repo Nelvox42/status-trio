@@ -38,10 +38,6 @@ struct SystemResourceStatus: Equatable, Sendable {
         hasReading: false
     )
 
-    var memoryUsageFraction: Double {
-        guard totalMemoryBytes > 0 else { return 0 }
-        return Double(usedMemoryBytes) / Double(totalMemoryBytes)
-    }
 }
 
 // MARK: - Math
@@ -84,11 +80,7 @@ enum SystemResourceMath {
 
 // MARK: - Live reader
 
-protocol SystemResourceReadingProviding: Sendable {
-    func read() -> SystemResourceSample?
-}
-
-struct LiveSystemResourceReader: SystemResourceReadingProviding, Sendable {
+struct LiveSystemResourceReader: Sendable {
     func read() -> SystemResourceSample? {
         let total = ProcessInfo.processInfo.physicalMemory
         guard total > 0, let ticks = readCPUTicks(), let statistics = readMemoryStatistics() else {
