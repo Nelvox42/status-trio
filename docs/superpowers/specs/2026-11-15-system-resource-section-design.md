@@ -87,9 +87,10 @@ the 8 sections that existed then, and `popupSectionOrder` import validates with
 `requiresFullOrder: true`, which demands every current case. Without a catalog change,
 importing an older document would warn, substitute `defaultPopupSectionOrder`, and
 silently reorder the user's panel. Decision: relax that one validation path to accept a
-document that lists a known, duplicate-free subset of the current cases, then fill the
-missing cases at their `defaultPopupSectionOrder` positions (preserving the document's
-relative order). A pre-feature fixture test proves the custom order survives. The
+document that lists every current case except a tail of `defaultPopupSectionOrder`
+(and is missing at most the newest section), then append the missing tail in default
+order, preserving the document's relative order. Anything shorter is treated as corrupt
+and keeps the warning. A pre-feature fixture test proves the custom order survives. The
 reverse direction — a document written by this build imported into v1.9.6 — stays
 unsupported; the old build rejects the unknown raw value and falls back to its
 defaults, and that limitation is stated next to the catalog code.
@@ -98,9 +99,10 @@ defaults, and that limitation is stated next to the catalog code.
 built by a pure mapper like `InputSourcePanelMapper`:
 
 - title: `systemResource.title` ("CPU & Memory")
-- subtitle: `CPU 18% · Memory 9.2 GB / 16 GB`, assembled from `systemResource.cpu`,
-  `systemResource.memory`, a localized byte formatter (`ByteCountFormatter`,
-  `.memory` style, `.file`-free), and the localized percent format
+- subtitle: `CPU 18% · Memory 9 GB / 16 GB`, assembled from `systemResource.cpu`,
+  `systemResource.memory`, `ByteCountFormatStyle(.decimal)` (decimal units keep a
+  16 GB Mac reporting "16 GB", the same convention Activity Monitor uses), and the
+  localized percent format
 - placeholder: an em dash for both halves until `hasReading` is true, so the row never
   claims `0%` or `0 bytes` as a measurement
 - accessibility: one combined element, `systemResource.accessibility`
