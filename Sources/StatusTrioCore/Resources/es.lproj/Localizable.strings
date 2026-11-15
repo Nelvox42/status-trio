@@ -762,6 +762,11 @@
 "airPods.spatialHeadTracked" = "Seguimiento de la cabeza";
 
 "airpods.retry" = "Reintentar";
+"settings.popup.order.systemResource" = "CPU y Memoria";
+"systemResource.title" = "CPU y memoria";
+"systemResource.cpu" = "CPU";
+"systemResource.memory" = "Memoria";
+"systemResource.accessibility" = "CPU %@, memoria %@ de %@";
 "settings.popup.order.brightness" = "Brillo";
 "brightness.row.accessibility" = "Brillo de %@, %@";
 "brightness.row.accessibilityUnavailable" = "Brillo de %@, %@";

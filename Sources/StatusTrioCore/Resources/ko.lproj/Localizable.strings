@@ -762,6 +762,11 @@
 "airPods.spatialHeadTracked" = "머리 추적";
 
 "airpods.retry" = "다시 시도";
+"settings.popup.order.systemResource" = "CPU 및 메모리";
+"systemResource.title" = "CPU 및 메모리";
+"systemResource.cpu" = "CPU";
+"systemResource.memory" = "메모리";
+"systemResource.accessibility" = "CPU %@, 메모리 %@ / %@";
 "settings.popup.order.brightness" = "밝기";
 "brightness.row.accessibility" = "%@의 밝기, %@";
 "brightness.row.accessibilityUnavailable" = "%@의 밝기, %@";

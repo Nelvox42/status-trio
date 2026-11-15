@@ -762,6 +762,11 @@
 "airPods.spatialHeadTracked" = "頭部追蹤";
 
 "airpods.retry" = "重試";
+"settings.popup.order.systemResource" = "CPU 與記憶體";
+"systemResource.title" = "CPU 與記憶體";
+"systemResource.cpu" = "CPU";
+"systemResource.memory" = "記憶體";
+"systemResource.accessibility" = "CPU %@，記憶體 %@ / %@";
 "settings.popup.order.brightness" = "亮度";
 "brightness.row.accessibility" = "%@ 的亮度，%@";
 "brightness.row.accessibilityUnavailable" = "%@ 的亮度，%@";

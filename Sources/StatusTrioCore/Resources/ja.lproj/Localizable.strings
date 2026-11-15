@@ -762,6 +762,11 @@
 "airPods.spatialHeadTracked" = "ヘッドトラッキング";
 
 "airpods.retry" = "再試行";
+"settings.popup.order.systemResource" = "CPU とメモリ";
+"systemResource.title" = "CPU とメモリ";
+"systemResource.cpu" = "CPU";
+"systemResource.memory" = "メモリ";
+"systemResource.accessibility" = "CPU %@、メモリ %@ / %@";
 "settings.popup.order.brightness" = "明るさ";
 "brightness.row.accessibility" = "%@ の明るさ、%@";
 "brightness.row.accessibilityUnavailable" = "%@ の明るさ、%@";

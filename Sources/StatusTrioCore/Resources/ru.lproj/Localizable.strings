@@ -762,6 +762,11 @@
 "airPods.spatialHeadTracked" = "Отслеживание головы";
 
 "airpods.retry" = "Повторить";
+"settings.popup.order.systemResource" = "ЦП и Память";
+"systemResource.title" = "CPU и память";
+"systemResource.cpu" = "CPU";
+"systemResource.memory" = "Память";
+"systemResource.accessibility" = "CPU %@, память %@ из %@";
 "settings.popup.order.brightness" = "Яркость";
 "brightness.row.accessibility" = "Яркость %@, %@";
 "brightness.row.accessibilityUnavailable" = "Яркость %@, %@";
