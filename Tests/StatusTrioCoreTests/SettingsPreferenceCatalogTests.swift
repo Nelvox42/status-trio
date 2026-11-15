@@ -335,6 +335,21 @@ final class SettingsPreferenceCatalogTests: XCTestCase {
         }
     }
 
+    func testPanelOrderAcceptsAPreFeatureDocumentAndAppendsTheNewSection() {
+        // A document written before the CPU and memory row existed lists only the
+        // eight sections that shipped then, in whatever order the user chose.
+        let legacy: [PopupSection] = [.volume, .brightness, .battery, .network, .vpn,
+                                      .bluetooth, .audioInput, .inputSource]
+        withStore { store, _ in
+            let prepared = SettingsPreferenceCatalog.prepare([
+                "popupSectionOrder": .array(legacy.map { .string($0.rawValue) })
+            ])
+            XCTAssertTrue(prepared.warnings.isEmpty)
+            SettingsPreferenceCatalog.apply(prepared.values, to: store)
+            XCTAssertEqual(store.popupSectionOrder, legacy + [.systemResource])
+        }
+    }
+
     private func withStore(_ body: (SettingsStore, UserDefaults) -> Void) {
         let name = "SettingsPreferenceCatalogTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: name)!

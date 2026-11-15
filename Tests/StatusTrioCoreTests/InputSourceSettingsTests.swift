@@ -49,7 +49,7 @@ final class InputSourceSettingsTests: XCTestCase {
         )
         let store = SettingsStore(defaults: suite.defaults)
 
-        XCTAssertEqual(store.popupSectionOrder.last, .inputSource)
+        XCTAssertTrue(store.popupSectionOrder.contains(.inputSource))
         XCTAssertEqual(store.popupSectionOrder.first, .volume)
         XCTAssertFalse(store.enabledPopupSections.contains(.inputSource))
         XCTAssertEqual(store.visiblePopupSections, [.volume, .battery])

@@ -338,8 +338,33 @@ enum SettingsPreferenceCatalog {
                   seen.insert(section).inserted else { return nil }
             result.append(section)
         }
-        if requiresFullOrder, seen != Set(PopupSection.allCases) { return nil }
-        return result
+        guard requiresFullOrder else { return result }
+        return completedOrder(result, seen: seen)
+    }
+
+    /// Earlier builds exported only the sections that existed then, and those are
+    /// always a prefix of today's `defaultPopupSectionOrder`. Accept such a
+    /// document, keep its relative order, and append the sections added since in
+    /// default order. A document that omits a section its own build already had
+    /// stays invalid, so a corrupt file cannot silently reorder the panel.
+    ///
+    /// The reverse direction is not supported: a document written by this build
+    /// names `.systemResource`, which the shipped v1.9.6 build rejects as unknown
+    /// and replaces with its own defaults.
+    private static func completedOrder(
+        _ listed: [PopupSection],
+        seen: Set<PopupSection>
+    ) -> [PopupSection]? {
+        let defaults = SettingsStore.defaultPopupSectionOrder
+        let missing = PopupSection.allCases.filter { !seen.contains($0) }
+        guard !missing.isEmpty else { return listed }
+        // Only the immediately previous release is supported: a document may be
+        // missing the newest section, never several at once. Anything shorter is
+        // corrupt rather than old, and keeps the warning.
+        guard listed.count >= PopupSection.allCases.count - 1,
+              let firstMissing = defaults.firstIndex(where: { missing.contains($0) }),
+              Set(listed) == Set(defaults.prefix(firstMissing)) else { return nil }
+        return listed + defaults[firstMissing...]
     }
 
     private static func sectionValues(_ sections: [PopupSection]) -> Value {
