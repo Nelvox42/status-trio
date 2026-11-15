@@ -89,6 +89,7 @@ final class StatusPanelViewModel: ObservableObject {
         static let inputSource = Self(rawValue: 1 << 3)
         static let vpn = Self(rawValue: 1 << 4)
         static let localIP = Self(rawValue: 1 << 5)
+        static let systemResource = Self(rawValue: 1 << 6)
     }
     @Published private(set) var battery: PanelSummaryState
     @Published private(set) var network: PanelSummaryState
@@ -110,6 +111,7 @@ final class StatusPanelViewModel: ObservableObject {
     @Published private(set) var brightness: BrightnessPanelState
     @Published private(set) var audioInput: AudioInputPanelState
     @Published private(set) var inputSource: InputSourcePanelState
+    @Published private(set) var systemResource: SystemResourcePanelState
     @Published private(set) var batteryDetails: PanelDetailState
     @Published private(set) var wifiDetails: WiFiPanelState
     @Published private(set) var wiredDetails: PanelDetailState
@@ -150,6 +152,7 @@ final class StatusPanelViewModel: ObservableObject {
     let layoutSnapshots: PanelListLayoutSnapshotStore
     private let localization: Localization
     private let inputSourceController: InputSourceController
+    private let systemResourceMonitor: SystemResourceMonitor
     private let chargeToFullNow: ChargeToFullNowController?
     private let vpnPower: VPNPowerController
     private let updateScheduler: any PanelPresentationUpdateScheduling
@@ -197,6 +200,7 @@ final class StatusPanelViewModel: ObservableObject {
         actions: StatusPanelActions,
         updateScheduler: any PanelPresentationUpdateScheduling = YieldingPanelPresentationUpdateScheduler(),
         inputSourceController: InputSourceController? = nil,
+        systemResourceMonitor: SystemResourceMonitor? = nil,
         chargeToFullNow: ChargeToFullNowController? = nil,
         vpnPower: VPNPowerController? = nil
     ) {
@@ -206,6 +210,7 @@ final class StatusPanelViewModel: ObservableObject {
         self.layoutSnapshots = PanelListLayoutSnapshotStore(defaults: settings.userDefaults)
         self.localization = localization
         self.inputSourceController = resolvedInputSourceController
+        self.systemResourceMonitor = systemResourceMonitor ?? SystemResourceMonitor()
         self.chargeToFullNow = chargeToFullNow
         self.vpnPower = vpnPower ?? store.vpnPower
         self.updateScheduler = updateScheduler
@@ -259,6 +264,7 @@ final class StatusPanelViewModel: ObservableObject {
             localization: localization,
             markerStyle: settings.inputSourceMarkerStyle
         )
+        systemResource = SystemResourcePanelMapper.map(nil, localization: localization)
         brightness = BrightnessPanelMapper.map(
             store.popupSnapshot.brightness,
             localization: localization,
@@ -377,6 +383,8 @@ final class StatusPanelViewModel: ObservableObject {
         cancelLevelVolumePublish()
         lastLiveVolumeStatus = nil
         sourceDemandCancellables.removeAll()
+        systemResourceMonitor.stop()
+        systemResource = .empty(localization: localization)
         store.mihomoTunnel.deactivate()
         subscribedSourceDemand = nil
         chargeToFullNow?.clearDemand()
@@ -511,6 +519,9 @@ final class StatusPanelViewModel: ObservableObject {
             inputSource = inputSource.releasingRows()
         } else {
             inputSource = inputSource.releasingPresentation()
+        }
+        if !isVisible(.systemResource) {
+            systemResource = .empty(localization: localization)
         }
         if !isVisible(.bluetooth), !isVisible(.volume) {
             listeningModeTaskID = ""
@@ -872,6 +883,7 @@ final class StatusPanelViewModel: ObservableObject {
         }
         if isVisible(.audioInput) { demand.insert(.audioInput) }
         if isVisible(.inputSource) { demand.insert(.inputSource) }
+        if isVisible(.systemResource) { demand.insert(.systemResource) }
         if isVisible(.vpn) { demand.insert(.vpn) }
         if isVisible(.network) { demand.insert(.localIP) }
         guard demand != subscribedSourceDemand else { return }
@@ -932,6 +944,18 @@ final class StatusPanelViewModel: ObservableObject {
                 publishInputSource(state: state, failure: failure)
             }
             .store(in: &sourceDemandCancellables)
+        }
+        if demand.contains(.systemResource) {
+            systemResourceMonitor.$status
+                .sink { [weak self] status in
+                    guard let self, isVisible(.systemResource) else { return }
+                    publishSystemResource(status)
+                }
+                .store(in: &sourceDemandCancellables)
+            systemResourceMonitor.setActive(true)
+        } else {
+            systemResourceMonitor.setActive(false)
+            systemResource = .empty(localization: localization)
         }
         if demand.contains(.bluetooth) {
             let regions: RefreshRegions = isVisible(.volume) ? [.bluetooth, .volume] : .bluetooth
@@ -996,6 +1020,9 @@ final class StatusPanelViewModel: ObservableObject {
                 state: inputSourceController.state,
                 failure: inputSourceController.selectionFailure
             )
+        }
+        if isVisible(.systemResource) {
+            publishSystemResource(systemResourceMonitor.status)
         }
         if store.batteryDetails.isActive { refreshBatteryDetails() }
         if store.wifiNetworks.isActive { refreshWiFiDetails() }
@@ -1301,6 +1328,12 @@ final class StatusPanelViewModel: ObservableObject {
     private func publishAudioInput(_ state: AudioInputPanelState) {
         guard audioInput != state else { return }
         audioInput = state
+    }
+
+    private func publishSystemResource(_ status: SystemResourceStatus) {
+        let next = SystemResourcePanelMapper.map(status, localization: localization)
+        guard systemResource != next else { return }
+        systemResource = next
     }
 
     private func publishInputSource(

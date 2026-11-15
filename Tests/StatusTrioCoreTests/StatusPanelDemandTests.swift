@@ -490,6 +490,83 @@ final class StatusPanelDemandTests: XCTestCase {
         XCTAssertTrue(panel.audioInput.rows.isEmpty)
     }
 
+    func testSystemResourceSamplesOnlyWhileEnabledAndPanelRunning() async throws {
+        let fixture = PanelStoreFixture()
+        for section in PopupSection.allCases {
+            fixture.settings.setPopupSection(section, enabled: false)
+        }
+        let counter = DemandSystemResourceReadCounter()
+        let monitor = SystemResourceMonitor(
+            reader: {
+                counter.value += 1
+                return SystemResourceSample(
+                    cpuTicks: CPUUsageTicks(user: 1, system: 0, idle: 1, nice: 0),
+                    usedMemoryBytes: 1024,
+                    totalMemoryBytes: 2048
+                )
+            },
+            interval: .milliseconds(20)
+        )
+        let panel = fixture.makePanel(systemResourceMonitor: monitor)
+        panel.start()
+        fixture.store.setPopoverVisible(true)
+        defer {
+            panel.stop()
+            fixture.store.setPopoverVisible(false)
+            fixture.store.stop()
+        }
+
+        try await Task.sleep(for: .milliseconds(60))
+        XCTAssertEqual(counter.value, 0, "a hidden section must not sample")
+
+        fixture.settings.setPopupSection(.systemResource, enabled: true)
+        try await Task.sleep(for: .milliseconds(80))
+        XCTAssertGreaterThan(counter.value, 0)
+        XCTAssertTrue(panel.systemResource.subtitle.hasPrefix("CPU"))
+
+        fixture.settings.setPopupSection(.systemResource, enabled: false)
+        try await Task.sleep(for: .milliseconds(40))
+        let afterHide = counter.value
+        try await Task.sleep(for: .milliseconds(60))
+        XCTAssertEqual(counter.value, afterHide, "hiding the section must stop sampling")
+
+        panel.stop()
+        let afterStop = counter.value
+        try await Task.sleep(for: .milliseconds(60))
+        XCTAssertEqual(counter.value, afterStop)
+    }
+
+    func testSystemResourceKeepsSamplingWhileADetailRouteIsOpen() async throws {
+        let fixture = PanelStoreFixture()
+        for section in PopupSection.allCases {
+            fixture.settings.setPopupSection(section, enabled: false)
+        }
+        fixture.settings.setPopupSection(.systemResource, enabled: true)
+        fixture.settings.setPopupSection(.inputSource, enabled: true)
+        let counter = DemandSystemResourceReadCounter()
+        let monitor = SystemResourceMonitor(
+            reader: {
+                counter.value += 1
+                return nil
+            },
+            interval: .milliseconds(20)
+        )
+        let panel = fixture.makePanel(systemResourceMonitor: monitor)
+        panel.start()
+        fixture.store.setPopoverVisible(true)
+        defer {
+            panel.stop()
+            fixture.store.setPopoverVisible(false)
+            fixture.store.stop()
+        }
+
+        panel.showInputSourcePage()
+        XCTAssertTrue(panel.isShowingDetailPage)
+        let before = counter.value
+        try await Task.sleep(for: .milliseconds(60))
+        XCTAssertGreaterThan(counter.value, before)
+    }
+
     private func waitForPendingCount(
         _ scheduler: DemandPanelUpdateScheduler,
         _ expected: Int
@@ -535,6 +612,10 @@ private final class DemandPanelUpdateScheduler: PanelPresentationUpdateSchedulin
     func runAllScheduled() {
         while runNextScheduled() {}
     }
+}
+
+private final class DemandSystemResourceReadCounter: @unchecked Sendable {
+    var value = 0
 }
 
 private final class DemandInputSourceReader: InputSourceReading, @unchecked Sendable {
