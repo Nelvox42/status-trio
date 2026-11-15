@@ -286,6 +286,9 @@ struct StatusPopoverView: View {
                 onOpen: { panel.showInputSourcePage() },
                 onOpenKeyboardSettings: openKeyboardSettings
             )
+        case .systemResource:
+            // Replaced by SystemResourceStatusView in the panel-wiring task.
+            EmptyView()
         }
     }
 
