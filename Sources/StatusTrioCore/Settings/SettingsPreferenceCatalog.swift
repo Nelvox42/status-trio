@@ -342,11 +342,11 @@ enum SettingsPreferenceCatalog {
         return completedOrder(result, seen: seen)
     }
 
-    /// Earlier builds exported only the sections that existed then, and those are
-    /// always a prefix of today's `defaultPopupSectionOrder`. Accept such a
-    /// document, keep its relative order, and append the sections added since in
-    /// default order. A document that omits a section its own build already had
-    /// stays invalid, so a corrupt file cannot silently reorder the panel.
+    /// Earlier builds exported only the sections that existed then, which are always
+    /// the trailing cases of `PopupSection.allCases`. Accept such a document, keep
+    /// its relative order, and append the sections added since. A document that
+    /// omits a section its own build already had stays invalid, so a corrupt file
+    /// cannot silently reorder the panel.
     ///
     /// The reverse direction is not supported: a document written by this build
     /// names `.systemResource`, which the shipped v1.9.6 build rejects as unknown
@@ -355,16 +355,17 @@ enum SettingsPreferenceCatalog {
         _ listed: [PopupSection],
         seen: Set<PopupSection>
     ) -> [PopupSection]? {
-        let defaults = SettingsStore.defaultPopupSectionOrder
-        let missing = PopupSection.allCases.filter { !seen.contains($0) }
+        let all = PopupSection.allCases
+        let missing = all.filter { !seen.contains($0) }
         guard !missing.isEmpty else { return listed }
         // Only the immediately previous release is supported: a document may be
         // missing the newest section, never several at once. Anything shorter is
-        // corrupt rather than old, and keeps the warning.
-        guard listed.count >= PopupSection.allCases.count - 1,
-              let firstMissing = defaults.firstIndex(where: { missing.contains($0) }),
-              Set(listed) == Set(defaults.prefix(firstMissing)) else { return nil }
-        return listed + defaults[firstMissing...]
+        // corrupt rather than old, and keeps the warning. The missing cases must be
+        // the trailing enum cases; a document that skips an older one is corrupt.
+        guard listed.count >= all.count - 1,
+              let firstMissing = all.firstIndex(where: { missing.contains($0) }),
+              all[firstMissing...].allSatisfy({ missing.contains($0) }) else { return nil }
+        return listed + missing
     }
 
     private static func sectionValues(_ sections: [PopupSection]) -> Value {

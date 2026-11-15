@@ -1489,10 +1489,14 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.inputDeviceOrder, [])
     }
 
-    func testSystemResourceSectionIsOffByDefaultAndSortsLast() {
+    func testSystemResourceSectionSitsUnderBluetoothAndIsOffByDefault() {
         let store = SettingsStore(defaults: makeSuite().defaults)
+        let order = store.popupSectionOrder
 
-        XCTAssertEqual(store.popupSectionOrder.last, .systemResource)
+        XCTAssertEqual(
+            order.firstIndex(of: .systemResource),
+            order.firstIndex(of: .bluetooth).map { $0 + 1 }
+        )
         XCTAssertFalse(store.enabledPopupSections.contains(.systemResource))
     }
 
@@ -1501,8 +1505,8 @@ final class SettingsStoreTests: XCTestCase {
 
         XCTAssertEqual(
             store.popupSectionOrder,
-            [.battery, .network, .vpn, .bluetooth, .volume, .audioInput, .brightness, .inputSource,
-             .systemResource]
+            [.battery, .network, .vpn, .bluetooth, .systemResource, .volume, .audioInput,
+             .brightness, .inputSource]
         )
     }
 
@@ -1680,8 +1684,8 @@ final class SettingsStoreTests: XCTestCase {
         let store = SettingsStore(defaults: suite.defaults)
         XCTAssertEqual(
             store.popupSectionOrder,
-            [.volume, .battery, .network, .vpn, .bluetooth, .audioInput, .brightness, .inputSource,
-             .systemResource]
+            [.volume, .battery, .network, .vpn, .bluetooth, .systemResource, .audioInput,
+             .brightness, .inputSource]
         )
         XCTAssertFalse(store.enabledPopupSections.contains(.audioInput))
         store.setPopupSection(.audioInput, enabled: true)
@@ -1713,8 +1717,8 @@ final class SettingsStoreTests: XCTestCase {
 
         XCTAssertEqual(
             first.popupSectionOrder,
-            [.battery, .network, .vpn, .bluetooth, .volume, .audioInput, .brightness, .inputSource,
-             .systemResource]
+            [.battery, .network, .vpn, .bluetooth, .systemResource, .volume, .audioInput,
+             .brightness, .inputSource]
         )
         XCTAssertEqual(
             first.visiblePopupSections,
@@ -1734,19 +1738,19 @@ final class SettingsStoreTests: XCTestCase {
 
         let store = SettingsStore(defaults: suite.defaults)
         store.movePopupSections(
-            fromOffsets: IndexSet(integer: 4),
+            fromOffsets: IndexSet(integer: 5),
             toOffset: 0
         )
 
         XCTAssertEqual(
             store.popupSectionOrder,
-            [.volume, .battery, .network, .vpn, .bluetooth, .audioInput, .brightness, .inputSource,
-             .systemResource]
+            [.volume, .battery, .network, .vpn, .bluetooth, .systemResource, .audioInput,
+             .brightness, .inputSource]
         )
         XCTAssertEqual(
             SettingsStore(defaults: suite.defaults).popupSectionOrder,
-            [.volume, .battery, .network, .vpn, .bluetooth, .audioInput, .brightness, .inputSource,
-             .systemResource]
+            [.volume, .battery, .network, .vpn, .bluetooth, .systemResource, .audioInput,
+             .brightness, .inputSource]
         )
     }
 
@@ -1763,8 +1767,8 @@ final class SettingsStoreTests: XCTestCase {
 
         XCTAssertEqual(
             store.popupSectionOrder,
-            [.volume, .network, .battery, .vpn, .bluetooth, .audioInput, .brightness, .inputSource,
-             .systemResource]
+            [.volume, .network, .battery, .vpn, .bluetooth, .systemResource, .audioInput,
+             .brightness, .inputSource]
         )
     }
 

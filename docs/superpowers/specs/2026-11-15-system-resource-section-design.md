@@ -49,10 +49,10 @@ detail page. Menu-bar display is explicitly out of scope.
 
 ## Decisions
 
-**Placement.** `PopupSection.systemResource` (already added) sorts last in
-`SettingsStore.defaultPopupSectionOrder` and joins `sanitizedPopupSectionOrder`'s
-append path, so existing stored orders gain it at the end without rewriting the
-user's list. It is **off by default**, like the VPN and Bluetooth rows: a fresh
+**Placement.** `PopupSection.systemResource` sits directly under the Bluetooth row in
+`SettingsStore.defaultPopupSectionOrder` (after VPN and Bluetooth, above volume), and
+joins `sanitizedPopupSectionOrder`'s append path, so existing stored orders gain it
+without rewriting the user's list. It is **off by default**, like the VPN and Bluetooth rows: a fresh
 install shows nothing new until the row is checked under Settings › Status Panel ›
 Order.
 

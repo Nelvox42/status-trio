@@ -191,11 +191,13 @@ final class SettingsStore: ObservableObject {
     static let hiddenBrightnessDisplayIDsDefaultsKey = "hiddenBrightnessDisplayIDs"
     static let popupSectionOrderDefaultsKey = "popupSectionOrder"
     static let enabledPopupSectionsDefaultsKey = "enabledPopupSections"
-    /// Default order of the status-panel sections. Display brightness sits below
-    /// the audio-input row so the two device-level controls stay together.
+    /// Default order of the status-panel sections. CPU and memory sit directly
+    /// under the Bluetooth row, above the volume and audio-input controls.
+    /// Display brightness stays below the audio-input row so the two device-level
+    /// controls stay together.
     static let defaultPopupSectionOrder: [PopupSection] = [
-        .battery, .network, .vpn, .bluetooth, .volume, .audioInput, .brightness, .inputSource,
-        .systemResource
+        .battery, .network, .vpn, .bluetooth, .systemResource, .volume, .audioInput, .brightness,
+        .inputSource
     ]
     /// Sections enabled for a fresh install. The VPN row is opt-in now: it is a
     /// regular section but is not part of this default set, so a new install
