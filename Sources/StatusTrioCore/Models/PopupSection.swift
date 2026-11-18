@@ -10,7 +10,6 @@ enum PopupSection: String, CaseIterable, Identifiable, Sendable {
     case audioInput
     case inputSource
     case systemResource
-    case networkSpeed
 
     var id: Self { self }
 
@@ -25,7 +24,6 @@ enum PopupSection: String, CaseIterable, Identifiable, Sendable {
         case .audioInput: .settingsPopupOrderAudioInput
         case .inputSource: .settingsPopupOrderInputSource
         case .systemResource: .settingsPopupOrderSystemResource
-        case .networkSpeed: .settingsPopupOrderNetworkSpeed
         }
     }
 
@@ -40,7 +38,6 @@ enum PopupSection: String, CaseIterable, Identifiable, Sendable {
         case .audioInput: "mic"
         case .inputSource: "keyboard"
         case .systemResource: "cpu"
-        case .networkSpeed: "arrow.up.arrow.down"
         }
     }
 }

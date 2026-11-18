@@ -59,7 +59,6 @@ Status Trio is a native macOS status app that combines Wi-Fi, battery, and volum
 - **One icon, three signals** — battery, Wi-Fi, and volume share one icon in the menu bar, the Dock, or both, and a Bluetooth device that is playing can take the middle spot with its own symbol.
 - **Bluetooth** — the volume indicator turns blue while it plays. The panel lists paired devices you can tap to connect or disconnect, shows battery levels by default, and stays off until you enable it.
 - **Battery** — percentage, charging or plugged in, time to full, and a color when it runs low. Open the row for adapter power, voltage, current, cycle count, and Low Power Mode, plus optional estimated power flow and a CPU energy-impact list. Supported Apple silicon Macs on macOS 26.4 or later can also override the charge limit with **Charge to Full Now**.
-- **Network speed** — the status panel can show live upload and download rates, refreshed every second while the panel is open. Off by default; enable it under **Settings › Status Panel › Displayed Items**.
 - **Wi-Fi** — the network you are on and how strong the signal is. Open it to see nearby networks, check the link details, or switch Wi-Fi off. Switching between networks happens in the Wi-Fi pane of System Settings.
 - **Volume** — level, mute, and the output device, drawn as dots or an arc. Scroll the whole panel or just the control, and pick which direction turns it up.
 - **Make it yours** — icon size, symbol scale, ring thickness, status colors, and which sections the popover shows, in the order you want.

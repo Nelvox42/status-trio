@@ -346,8 +346,7 @@ final class SettingsPreferenceCatalogTests: XCTestCase {
             ])
             XCTAssertTrue(prepared.warnings.isEmpty)
             SettingsPreferenceCatalog.apply(prepared.values, to: store)
-            // Both sections added after that build are appended, in enum order.
-            XCTAssertEqual(store.popupSectionOrder, legacy + [.systemResource, .networkSpeed])
+            XCTAssertEqual(store.popupSectionOrder, legacy + [.systemResource])
         }
     }
 
@@ -363,27 +362,6 @@ final class SettingsPreferenceCatalogTests: XCTestCase {
         XCTAssertEqual(
             prepared.values["popupSectionOrder"],
             .array(SettingsStore.defaultPopupSectionOrder.map { .string($0.rawValue) })
-        )
-    }
-
-    func testPanelOrderAcceptsADocumentMissingOnlyTheNewestSection() {
-        let previous = [PopupSection.volume, .battery, .network, .vpn, .bluetooth,
-                        .systemResource, .audioInput, .brightness, .inputSource]
-        withStore { store, _ in
-            let prepared = SettingsPreferenceCatalog.prepare([
-                "popupSectionOrder": .array(previous.map { .string($0.rawValue) })
-            ])
-            XCTAssertTrue(prepared.warnings.isEmpty)
-            SettingsPreferenceCatalog.apply(prepared.values, to: store)
-            XCTAssertEqual(store.popupSectionOrder, previous + [.networkSpeed])
-        }
-    }
-
-    func testTransferBaselineStaysTheOldestSectionPrefix() {
-        XCTAssertEqual(
-            SettingsPreferenceCatalog.transferBaselineSections,
-            Set(PopupSection.allCases.prefix(8)),
-            "a new section inserted mid-enum would silently make old documents corrupt"
         )
     }
 

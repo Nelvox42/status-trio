@@ -1117,7 +1117,6 @@ final class PanelStoreFixture {
         actions: StatusPanelActions? = nil,
         inputSourceController: InputSourceController? = nil,
         systemResourceMonitor: SystemResourceMonitor? = nil,
-        networkSpeedMonitor: NetworkThroughputMonitor? = nil,
         chargeToFullNow: ChargeToFullNowController? = nil
     ) -> StatusPanelViewModel {
         StatusPanelViewModel(
@@ -1128,7 +1127,6 @@ final class PanelStoreFixture {
             updateScheduler: updateScheduler,
             inputSourceController: inputSourceController,
             systemResourceMonitor: systemResourceMonitor,
-            networkSpeedMonitor: networkSpeedMonitor,
             chargeToFullNow: chargeToFullNow
         )
     }

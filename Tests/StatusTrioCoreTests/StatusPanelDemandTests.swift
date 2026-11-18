@@ -567,57 +567,6 @@ final class StatusPanelDemandTests: XCTestCase {
         XCTAssertGreaterThan(counter.value, before)
     }
 
-    func testNetworkSpeedSamplesOnlyWhileEnabledAndPanelRunning() async throws {
-        let fixture = PanelStoreFixture()
-        for section in PopupSection.allCases {
-            fixture.settings.setPopupSection(section, enabled: false)
-        }
-        let counter = DemandSystemResourceReadCounter()
-        let clock = DemandNetworkClock()
-        let monitor = NetworkThroughputMonitor(
-            reader: {
-                counter.value += 1
-                return NetworkByteCounters(receivedBytes: UInt64(counter.value) * 1_000,
-                                           sentBytes: UInt64(counter.value) * 500)
-            },
-            uptime: { clock.value },
-            interval: .milliseconds(20)
-        )
-        let panel = fixture.makePanel(networkSpeedMonitor: monitor)
-        panel.start()
-        fixture.store.setPopoverVisible(true)
-        defer {
-            panel.stop()
-            fixture.store.setPopoverVisible(false)
-            fixture.store.stop()
-        }
-
-        try await Task.sleep(for: .milliseconds(60))
-        XCTAssertEqual(counter.value, 0, "a hidden section must not sample")
-
-        fixture.settings.setPopupSection(.networkSpeed, enabled: true)
-        try await Task.sleep(for: .milliseconds(80))
-        clock.value += 1
-        try await Task.sleep(for: .milliseconds(60))
-        XCTAssertGreaterThan(counter.value, 1)
-        XCTAssertTrue(panel.networkSpeed.subtitle.hasPrefix("↑"))
-        XCTAssertFalse(
-            panel.networkSpeed.subtitle.contains("—"),
-            "with two samples and an advanced clock the row must show numbers"
-        )
-
-        fixture.settings.setPopupSection(.networkSpeed, enabled: false)
-        try await Task.sleep(for: .milliseconds(40))
-        let afterHide = counter.value
-        try await Task.sleep(for: .milliseconds(60))
-        XCTAssertEqual(counter.value, afterHide, "hiding the section must stop sampling")
-
-        panel.stop()
-        let afterStop = counter.value
-        try await Task.sleep(for: .milliseconds(60))
-        XCTAssertEqual(counter.value, afterStop)
-    }
-
     private func waitForPendingCount(
         _ scheduler: DemandPanelUpdateScheduler,
         _ expected: Int
@@ -667,10 +616,6 @@ private final class DemandPanelUpdateScheduler: PanelPresentationUpdateSchedulin
 
 private final class DemandSystemResourceReadCounter: @unchecked Sendable {
     var value = 0
-}
-
-private final class DemandNetworkClock: @unchecked Sendable {
-    var value: TimeInterval = 100
 }
 
 private final class DemandInputSourceReader: InputSourceReading, @unchecked Sendable {

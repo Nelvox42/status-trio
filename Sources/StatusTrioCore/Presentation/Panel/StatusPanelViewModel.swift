@@ -90,7 +90,6 @@ final class StatusPanelViewModel: ObservableObject {
         static let vpn = Self(rawValue: 1 << 4)
         static let localIP = Self(rawValue: 1 << 5)
         static let systemResource = Self(rawValue: 1 << 6)
-        static let networkSpeed = Self(rawValue: 1 << 7)
     }
     @Published private(set) var battery: PanelSummaryState
     @Published private(set) var network: PanelSummaryState
@@ -113,7 +112,6 @@ final class StatusPanelViewModel: ObservableObject {
     @Published private(set) var audioInput: AudioInputPanelState
     @Published private(set) var inputSource: InputSourcePanelState
     @Published private(set) var systemResource: SystemResourcePanelState
-    @Published private(set) var networkSpeed: NetworkSpeedPanelState
     @Published private(set) var batteryDetails: PanelDetailState
     @Published private(set) var wifiDetails: WiFiPanelState
     @Published private(set) var wiredDetails: PanelDetailState
@@ -155,7 +153,6 @@ final class StatusPanelViewModel: ObservableObject {
     private let localization: Localization
     private let inputSourceController: InputSourceController
     private let systemResourceMonitor: SystemResourceMonitor
-    private let networkSpeedMonitor: NetworkThroughputMonitor
     private let chargeToFullNow: ChargeToFullNowController?
     private let vpnPower: VPNPowerController
     private let updateScheduler: any PanelPresentationUpdateScheduling
@@ -204,7 +201,6 @@ final class StatusPanelViewModel: ObservableObject {
         updateScheduler: any PanelPresentationUpdateScheduling = YieldingPanelPresentationUpdateScheduler(),
         inputSourceController: InputSourceController? = nil,
         systemResourceMonitor: SystemResourceMonitor? = nil,
-        networkSpeedMonitor: NetworkThroughputMonitor? = nil,
         chargeToFullNow: ChargeToFullNowController? = nil,
         vpnPower: VPNPowerController? = nil
     ) {
@@ -215,7 +211,6 @@ final class StatusPanelViewModel: ObservableObject {
         self.localization = localization
         self.inputSourceController = resolvedInputSourceController
         self.systemResourceMonitor = systemResourceMonitor ?? SystemResourceMonitor()
-        self.networkSpeedMonitor = networkSpeedMonitor ?? NetworkThroughputMonitor()
         self.chargeToFullNow = chargeToFullNow
         self.vpnPower = vpnPower ?? store.vpnPower
         self.updateScheduler = updateScheduler
@@ -270,7 +265,6 @@ final class StatusPanelViewModel: ObservableObject {
             markerStyle: settings.inputSourceMarkerStyle
         )
         systemResource = SystemResourcePanelMapper.map(nil, localization: localization)
-        networkSpeed = NetworkSpeedPanelMapper.map(nil, localization: localization)
         brightness = BrightnessPanelMapper.map(
             store.popupSnapshot.brightness,
             localization: localization,
@@ -391,8 +385,6 @@ final class StatusPanelViewModel: ObservableObject {
         sourceDemandCancellables.removeAll()
         systemResourceMonitor.stop()
         systemResource = .empty(localization: localization)
-        networkSpeedMonitor.stop()
-        networkSpeed = .empty(localization: localization)
         store.mihomoTunnel.deactivate()
         subscribedSourceDemand = nil
         chargeToFullNow?.clearDemand()
@@ -530,9 +522,6 @@ final class StatusPanelViewModel: ObservableObject {
         }
         if !isVisible(.systemResource) {
             systemResource = .empty(localization: localization)
-        }
-        if !isVisible(.networkSpeed) {
-            networkSpeed = .empty(localization: localization)
         }
         if !isVisible(.bluetooth), !isVisible(.volume) {
             listeningModeTaskID = ""
@@ -895,7 +884,6 @@ final class StatusPanelViewModel: ObservableObject {
         if isVisible(.audioInput) { demand.insert(.audioInput) }
         if isVisible(.inputSource) { demand.insert(.inputSource) }
         if isVisible(.systemResource) { demand.insert(.systemResource) }
-        if isVisible(.networkSpeed) { demand.insert(.networkSpeed) }
         if isVisible(.vpn) { demand.insert(.vpn) }
         if isVisible(.network) { demand.insert(.localIP) }
         guard demand != subscribedSourceDemand else { return }
@@ -969,18 +957,6 @@ final class StatusPanelViewModel: ObservableObject {
             systemResourceMonitor.setActive(false)
             systemResource = .empty(localization: localization)
         }
-        if demand.contains(.networkSpeed) {
-            networkSpeedMonitor.$status
-                .sink { [weak self] status in
-                    guard let self, isVisible(.networkSpeed) else { return }
-                    publishNetworkSpeed(status)
-                }
-                .store(in: &sourceDemandCancellables)
-            networkSpeedMonitor.setActive(true)
-        } else {
-            networkSpeedMonitor.setActive(false)
-            networkSpeed = .empty(localization: localization)
-        }
         if demand.contains(.bluetooth) {
             let regions: RefreshRegions = isVisible(.volume) ? [.bluetooth, .volume] : .bluetooth
             if !demand.contains(.volume) {
@@ -1047,9 +1023,6 @@ final class StatusPanelViewModel: ObservableObject {
         }
         if isVisible(.systemResource) {
             publishSystemResource(systemResourceMonitor.status)
-        }
-        if isVisible(.networkSpeed) {
-            publishNetworkSpeed(networkSpeedMonitor.status)
         }
         if store.batteryDetails.isActive { refreshBatteryDetails() }
         if store.wifiNetworks.isActive { refreshWiFiDetails() }
@@ -1355,12 +1328,6 @@ final class StatusPanelViewModel: ObservableObject {
     private func publishAudioInput(_ state: AudioInputPanelState) {
         guard audioInput != state else { return }
         audioInput = state
-    }
-
-    private func publishNetworkSpeed(_ reading: NetworkThroughputReading) {
-        let next = NetworkSpeedPanelMapper.map(reading, localization: localization)
-        guard networkSpeed != next else { return }
-        networkSpeed = next
     }
 
     private func publishSystemResource(_ status: SystemResourceStatus) {

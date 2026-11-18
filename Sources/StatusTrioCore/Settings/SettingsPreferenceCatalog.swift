@@ -351,13 +351,6 @@ enum SettingsPreferenceCatalog {
     /// The reverse direction is not supported: a document written by this build
     /// names `.systemResource`, which the shipped v1.9.6 build rejects as unknown
     /// and replaces with its own defaults.
-    /// The sections that shipped when settings transfer was introduced. A document
-    /// must name all of them to be read as an older release rather than a corrupt
-    /// file, so a one-section order still produces the warning.
-    static let transferBaselineSections: Set<PopupSection> = [
-        .battery, .network, .vpn, .bluetooth, .volume, .brightness, .audioInput, .inputSource
-    ]
-
     private static func completedOrder(
         _ listed: [PopupSection],
         seen: Set<PopupSection>
@@ -365,11 +358,11 @@ enum SettingsPreferenceCatalog {
         let all = PopupSection.allCases
         let missing = all.filter { !seen.contains($0) }
         guard !missing.isEmpty else { return listed }
-        // A document may predate any number of sections as long as they are the
-        // trailing enum cases, so a v1.9.6 document (missing two) and a document
-        // from just before the newest row both import. A document that skips an
-        // older case is corrupt rather than old, and keeps the warning.
-        guard transferBaselineSections.isSubset(of: seen),
+        // Only the immediately previous release is supported: a document may be
+        // missing the newest section, never several at once. Anything shorter is
+        // corrupt rather than old, and keeps the warning. The missing cases must be
+        // the trailing enum cases; a document that skips an older one is corrupt.
+        guard listed.count >= all.count - 1,
               let firstMissing = all.firstIndex(where: { missing.contains($0) }),
               all[firstMissing...].allSatisfy({ missing.contains($0) }) else { return nil }
         return listed + missing
