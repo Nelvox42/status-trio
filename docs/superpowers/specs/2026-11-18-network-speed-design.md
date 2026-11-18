@@ -75,8 +75,8 @@ New localization keys (12 languages): `settings.popup.order.networkSpeed`,
 **Settings transfer.** Adding a second new case makes a shipped v1.9.6 document miss
 two cases, so `CompletedOrder` stops requiring "at most one missing" and accepts any
 non-empty suffix of `PopupSection.allCases` as the set of sections a document may
-predate. A document that omits an older section (for example `.battery`) is still
-rejected with the warning.
+predate, provided the document still names the eight sections that shipped with
+settings transfer. A shorter or middle-gapped order stays a warning.
 
 ## Approaches considered
 

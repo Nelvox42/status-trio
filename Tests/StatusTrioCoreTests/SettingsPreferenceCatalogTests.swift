@@ -346,7 +346,8 @@ final class SettingsPreferenceCatalogTests: XCTestCase {
             ])
             XCTAssertTrue(prepared.warnings.isEmpty)
             SettingsPreferenceCatalog.apply(prepared.values, to: store)
-            XCTAssertEqual(store.popupSectionOrder, legacy + [.systemResource])
+            // Both sections added after that build are appended, in enum order.
+            XCTAssertEqual(store.popupSectionOrder, legacy + [.systemResource, .networkSpeed])
         }
     }
 
@@ -363,6 +364,19 @@ final class SettingsPreferenceCatalogTests: XCTestCase {
             prepared.values["popupSectionOrder"],
             .array(SettingsStore.defaultPopupSectionOrder.map { .string($0.rawValue) })
         )
+    }
+
+    func testPanelOrderAcceptsADocumentMissingOnlyTheNewestSection() {
+        let previous = [PopupSection.volume, .battery, .network, .vpn, .bluetooth,
+                        .systemResource, .audioInput, .brightness, .inputSource]
+        withStore { store, _ in
+            let prepared = SettingsPreferenceCatalog.prepare([
+                "popupSectionOrder": .array(previous.map { .string($0.rawValue) })
+            ])
+            XCTAssertTrue(prepared.warnings.isEmpty)
+            SettingsPreferenceCatalog.apply(prepared.values, to: store)
+            XCTAssertEqual(store.popupSectionOrder, previous + [.networkSpeed])
+        }
     }
 
     private func withStore(_ body: (SettingsStore, UserDefaults) -> Void) {

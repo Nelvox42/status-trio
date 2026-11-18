@@ -288,6 +288,8 @@ struct StatusPopoverView: View {
             )
         case .systemResource:
             SystemResourceStatusView(state: panel.systemResource)
+        case .networkSpeed:
+            NetworkSpeedStatusView(state: panel.networkSpeed)
         }
     }
 
