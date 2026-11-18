@@ -767,6 +767,9 @@
 "systemResource.cpu" = "CPU";
 "systemResource.memory" = "メモリ";
 "systemResource.accessibility" = "CPU %@、メモリ %@ / %@";
+"settings.popup.order.networkSpeed" = "ネットワーク速度";
+"networkSpeed.title" = "ネットワーク速度";
+"networkSpeed.accessibility" = "アップロード %@、ダウンロード %@";
 "settings.popup.order.brightness" = "明るさ";
 "brightness.row.accessibility" = "%@ の明るさ、%@";
 "brightness.row.accessibilityUnavailable" = "%@ の明るさ、%@";

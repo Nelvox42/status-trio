@@ -767,6 +767,9 @@
 "systemResource.cpu" = "CPU";
 "systemResource.memory" = "الذاكرة";
 "systemResource.accessibility" = "CPU %@، الذاكرة %@ / %@";
+"settings.popup.order.networkSpeed" = "سرعة الشبكة";
+"networkSpeed.title" = "سرعة الشبكة";
+"networkSpeed.accessibility" = "الرفع %@، التنزيل %@";
 "settings.popup.order.brightness" = "السطوع";
 "brightness.row.accessibility" = "السطوع لـ %@، %@";
 "brightness.row.accessibilityUnavailable" = "السطوع لـ %@، %@";

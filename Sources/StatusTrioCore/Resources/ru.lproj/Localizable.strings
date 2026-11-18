@@ -767,6 +767,9 @@
 "systemResource.cpu" = "CPU";
 "systemResource.memory" = "Память";
 "systemResource.accessibility" = "CPU %@, память %@ из %@";
+"settings.popup.order.networkSpeed" = "Скорость сети";
+"networkSpeed.title" = "Скорость сети";
+"networkSpeed.accessibility" = "Отдача %@, приём %@";
 "settings.popup.order.brightness" = "Яркость";
 "brightness.row.accessibility" = "Яркость %@, %@";
 "brightness.row.accessibilityUnavailable" = "Яркость %@, %@";

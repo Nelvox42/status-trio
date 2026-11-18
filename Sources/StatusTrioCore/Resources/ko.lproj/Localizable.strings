@@ -767,6 +767,9 @@
 "systemResource.cpu" = "CPU";
 "systemResource.memory" = "메모리";
 "systemResource.accessibility" = "CPU %@, 메모리 %@ / %@";
+"settings.popup.order.networkSpeed" = "네트워크 속도";
+"networkSpeed.title" = "네트워크 속도";
+"networkSpeed.accessibility" = "업로드 %@, 다운로드 %@";
 "settings.popup.order.brightness" = "밝기";
 "brightness.row.accessibility" = "%@의 밝기, %@";
 "brightness.row.accessibilityUnavailable" = "%@의 밝기, %@";

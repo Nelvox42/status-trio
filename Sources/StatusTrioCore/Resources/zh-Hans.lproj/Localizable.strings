@@ -767,6 +767,9 @@
 "systemResource.cpu" = "CPU";
 "systemResource.memory" = "内存";
 "systemResource.accessibility" = "CPU %@，内存 %@ / %@";
+"settings.popup.order.networkSpeed" = "网速";
+"networkSpeed.title" = "网速";
+"networkSpeed.accessibility" = "上传 %@，下载 %@";
 "settings.popup.order.brightness" = "亮度";
 "brightness.row.accessibility" = "%@ 的亮度，%@";
 "brightness.row.accessibilityUnavailable" = "%@ 的亮度，%@";

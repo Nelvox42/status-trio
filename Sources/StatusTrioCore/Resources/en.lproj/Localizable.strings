@@ -766,6 +766,9 @@
 "systemResource.cpu" = "CPU";
 "systemResource.memory" = "Memory";
 "systemResource.accessibility" = "CPU %@, memory %@ of %@";
+"settings.popup.order.networkSpeed" = "Network Speed";
+"networkSpeed.title" = "Network Speed";
+"networkSpeed.accessibility" = "Up %@, down %@";
 "settings.popup.order.brightness" = "Brightness";
 "brightness.row.accessibility" = "Brightness for %@, %@";
 "brightness.row.accessibilityUnavailable" = "Brightness for %@, %@";

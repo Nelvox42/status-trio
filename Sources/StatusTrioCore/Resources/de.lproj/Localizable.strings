@@ -767,6 +767,9 @@
 "systemResource.cpu" = "CPU";
 "systemResource.memory" = "Arbeitsspeicher";
 "systemResource.accessibility" = "CPU %@, Arbeitsspeicher %@ von %@";
+"settings.popup.order.networkSpeed" = "Netzwerkgeschwindigkeit";
+"networkSpeed.title" = "Netzwerkgeschwindigkeit";
+"networkSpeed.accessibility" = "Upload %@, Download %@";
 "settings.popup.order.brightness" = "Helligkeit";
 "brightness.row.accessibility" = "Helligkeit für %@, %@";
 "brightness.row.accessibilityUnavailable" = "Helligkeit für %@, %@";
