@@ -354,7 +354,7 @@ enum SettingsPreferenceCatalog {
     /// The sections that shipped when settings transfer was introduced. A document
     /// must name all of them to be read as an older release rather than a corrupt
     /// file, so a one-section order still produces the warning.
-    private static let transferBaselineSections: Set<PopupSection> = [
+    static let transferBaselineSections: Set<PopupSection> = [
         .battery, .network, .vpn, .bluetooth, .volume, .brightness, .audioInput, .inputSource
     ]
 

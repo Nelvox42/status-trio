@@ -53,12 +53,21 @@ struct LiveNetworkCounterReader: Sendable {
             sysctl(&mib, u_int(mib.count), raw.baseAddress, &length, nil, 0)
         }
         guard result == 0 else { return nil }
+        return Self.counters(in: buffer, length: length, interfaceName: Self.interfaceName(index:))
+    }
 
+    /// Walks the routing table and sums the eligible interfaces. Split out so a test
+    /// can feed synthetic messages — including malformed ones — without a sysctl.
+    static func counters(
+        in bytes: [UInt8],
+        length: Int,
+        interfaceName: (UInt16) -> String?
+    ) -> NetworkByteCounters? {
         var received: UInt64 = 0
         var sent: UInt64 = 0
         var found = false
 
-        buffer.withUnsafeBytes { raw in
+        bytes.withUnsafeBytes { raw in
             var offset = 0
             while offset + MemoryLayout<if_msghdr2>.size <= length {
                 let message = raw.loadUnaligned(fromByteOffset: offset, as: if_msghdr2.self)
@@ -66,7 +75,7 @@ struct LiveNetworkCounterReader: Sendable {
                 guard messageLength > 0 else { break }
                 if Int32(message.ifm_type) == RTM_IFINFO2,
                    message.ifm_flags & IFF_UP != 0,
-                   let name = Self.interfaceName(index: message.ifm_index),
+                   let name = interfaceName(message.ifm_index),
                    name.hasPrefix("en") || name.hasPrefix("pdp_ip") {
                     received &+= message.ifm_data.ifi_ibytes
                     sent &+= message.ifm_data.ifi_obytes
@@ -141,7 +150,14 @@ final class NetworkThroughputMonitor: ObservableObject {
     /// One synchronous sample, kept internal so tests can drive the delta math.
     func sampleNow() {
         let now = uptime()
-        guard let current = reader() else { return }
+        guard let current = reader() else {
+            // No interface reading at all (Wi-Fi off, sysctl failed): drop the
+            // baseline and show dashes, so a live-looking rate never lingers while
+            // the machine is disconnected.
+            previous = nil
+            if status != .placeholder { status = .placeholder }
+            return
+        }
         let prior = previous
         previous = (current, now)
         guard let prior else { return }
@@ -157,8 +173,9 @@ final class NetworkThroughputMonitor: ObservableObject {
             previous: prior.counters.sentBytes,
             elapsed: elapsed
         )
-        // A reset produces no rate at all; keep the previous reading and let the
-        // next sample recover instead of flashing a negative or zero value.
+        // One reset half becomes a dash while the other still publishes; when both
+        // halves reset there is no reading at all, so the previous one stands and
+        // the next sample recovers.
         guard received != nil || sent != nil else { return }
         let next = NetworkThroughputReading(
             receivedBytesPerSecond: received,
@@ -172,15 +189,17 @@ final class NetworkThroughputMonitor: ObservableObject {
         generation &+= 1
         let currentGeneration = generation
         sampleNow()
+        let interval = self.interval
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
-                guard let self else { return }
                 do {
-                    try await Task.sleep(for: self.interval)
+                    try await Task.sleep(for: interval)
                 } catch {
                     return
                 }
-                guard self.generation == currentGeneration, self.isActive else { return }
+                guard let self, self.generation == currentGeneration, self.isActive else {
+                    return
+                }
                 self.sampleNow()
             }
         }

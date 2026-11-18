@@ -30,6 +30,9 @@ enum NetworkSpeedPanelMapper {
             allowedUnits: .all,
             spellsOutZero: false
         )
-        return Int64(rate.rounded()).formatted(style.locale(locale)) + "/s"
+        // A finite rate can still exceed `Int64` for an absurd injected clock; clamp
+        // it to a display ceiling rather than trapping.
+        let bytes = min(rate.rounded(), 1e15)
+        return Int64(bytes).formatted(style.locale(locale)) + "/s"
     }
 }

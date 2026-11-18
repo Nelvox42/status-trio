@@ -379,6 +379,14 @@ final class SettingsPreferenceCatalogTests: XCTestCase {
         }
     }
 
+    func testTransferBaselineStaysTheOldestSectionPrefix() {
+        XCTAssertEqual(
+            SettingsPreferenceCatalog.transferBaselineSections,
+            Set(PopupSection.allCases.prefix(8)),
+            "a new section inserted mid-enum would silently make old documents corrupt"
+        )
+    }
+
     private func withStore(_ body: (SettingsStore, UserDefaults) -> Void) {
         let name = "SettingsPreferenceCatalogTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: name)!

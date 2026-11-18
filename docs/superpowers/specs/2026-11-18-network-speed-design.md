@@ -51,7 +51,10 @@ are summed, because there is no per-service picker in v1.
 **Rate.** Bytes delta over monotonic uptime delta (`ProcessInfo.systemUptime`), so a
 wall-clock change cannot distort the rate. A negative delta — counter reset, interface
 re-plugged — yields `nil` for that sample instead of a nonsense spike; the next sample
-recovers. Both rates are published together; the row shows `—` for a nil half.
+recovers. Both rates are published together; the row shows `—` for a nil half. When no
+eligible interface is up at all (Wi-Fi off, `sysctl` failure) the baseline is dropped
+and the row returns to dashes, so a live-looking rate never freezes on screen while the
+machine is disconnected.
 
 **Sampling.** 1-second cadence. The panel view model owns the monitor and reconciles it
 in `reconcileSourceSubscriptions`, exactly like the CPU and memory row: `start()` on

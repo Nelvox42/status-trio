@@ -601,6 +601,10 @@ final class StatusPanelDemandTests: XCTestCase {
         try await Task.sleep(for: .milliseconds(60))
         XCTAssertGreaterThan(counter.value, 1)
         XCTAssertTrue(panel.networkSpeed.subtitle.hasPrefix("↑"))
+        XCTAssertFalse(
+            panel.networkSpeed.subtitle.contains("—"),
+            "with two samples and an advanced clock the row must show numbers"
+        )
 
         fixture.settings.setPopupSection(.networkSpeed, enabled: false)
         try await Task.sleep(for: .milliseconds(40))

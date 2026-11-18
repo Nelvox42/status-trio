@@ -26,12 +26,10 @@ final class NetworkSpeedPanelMapperTests: XCTestCase {
         XCTAssertEqual(state.subtitle, "↑ 0 bytes/s · ↓ —")
     }
 
-    func testEmptyMatchesThePlaceholderMapping() {
-        let localization = Self.localization()
-        XCTAssertEqual(
-            NetworkSpeedPanelState.empty(localization: localization),
-            NetworkSpeedPanelMapper.map(nil, localization: localization)
-        )
+    func testEmptyUsesTheLocalizedTitleAndDashes() {
+        let state = NetworkSpeedPanelState.empty(localization: Self.localization())
+        XCTAssertEqual(state.title, "Network Speed")
+        XCTAssertEqual(state.subtitle, "↑ — · ↓ —")
     }
 
     private static func localization(language: String = "en") -> Localization {
